@@ -2,13 +2,13 @@ var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/doitdb',{ useNewUrlParser: true });
 var passportLocalMongoose = require('passport-local-mongoose');
 var UserSchema = new mongoose.Schema({
-    username:String,
     password:String,
     fullname:String,
-    email:String,
+    username:String,  //email
     category:String,
-    spass:String,
-    secured:String,
+    spass10:String,
+    spass12:String,
+    spassgrad:String,
     state:String,
     branch:String,
     income:Number

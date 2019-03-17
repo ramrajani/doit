@@ -10,7 +10,9 @@ const express    = require('express'),
       request = require('request'),
       minify=require('harp-minify'),
       cheerio =require('cheerio'),
-      find=require('cheerio-eq');
+      find=require('cheerio-eq'),
+      sq=require('./database/sqlmodels/scholar.js'),
+      Forum = require("./database/mongomodels/forum.js");
 
       
       
@@ -46,6 +48,63 @@ function isLoggedIn(req,res,next){
     }
     res.redirect("/login");
 }
+//-----------------------------------------------------------------------------------------------
+//login routes
+
+//   Login routes using passport
+
+//show sign up page
+app.get("/signup",function(req,res){
+    
+   res.render("register",{CurrentUser:req.user});
+});
+
+
+
+
+// register route 
+app.post("/register",function(req,res){
+
+console.log(req.body);
+
+    User.register(new User({ 
+    fullname:req.body.name,
+    username:req.body.id,  //email
+    category:req.body.category,
+    spass10:req.body.ssc,
+    spass12:req.body.hsc,
+    spassgrad:req.body.graduation,
+    state:req.body.state,
+    branch:req.body.branch,
+    income:req.body.income}),req.body.password,function(err,user){
+                if(err){
+                    console.log(err);
+                    return res.render("index");
+                }
+                passport.authenticate("local")(req,res,function(){
+                      res.redirect("/");
+                });
+    });
+ 
+
+ });
+ 
+ // login route
+app.post("/login",passport.authenticate("local",{
+    successRedirect:"/",
+    failureRedirect:"/india"
+}),function(req,res){
+
+
+});
+// logout route
+app.get("/logout",function(req,res){
+    req.logout();
+    res.redirect("/");
+});
+
+
+
 // -----------------------------------------------------------------------------------------------
 
 app.get("/",function(req,res){
@@ -55,10 +114,19 @@ app.get("/",function(req,res){
 
 
 app.get("/scholarships",function(req,res){
-    res.render("scholarships");
+    res.render("scholarships",{CurrentUser:req.user});
 });
 
-
+app.get("/viewscholarship",function(req,res){
+    console.log(req.query);
+    if(req.user){
+    res.render("viewscholarship",{id:req.query.id,CurrentUser:req.user});    
+    }else{
+        res.render("viewscholarship",{id:req.query.id,CurrentUser:'idea'});
+    }
+    
+    
+});
 
 
 
@@ -77,8 +145,9 @@ app.get("/newsupdate",function(req,res){
           var $ = cheerio.load(html);
           var a =$(".marquee").eq(0).text().trim();
           console.log(a);
-          temp=a;
-          res.send(temp);  
+          var jsonData = {};
+          jsonData['data']=a;
+          res.send(jsonData);  
         }
 }); 
 
@@ -86,9 +155,44 @@ app.get("/newsupdate",function(req,res){
 
 });
 
+// get last for scholarships scholarships
+
+app.get("/fourscholars",sq.fourscholar);
+
+// get all scholarships
+app.get("/allscholarships",sq.allscholar);
+
+// get scholarships with respect to particular fields
+
+app.get("/filterscholarships",sq.filterscholar);
+// get scholarships by id
+app.get("/getscholarshipbyid",sq.scholarshipbyid);
+
+app.get("/dashboard",function(req,res){
+    res.render("dashboard",{CurrentUser:req.user});
+})
+
+app.get("/chatbot",function(req,res){
+    res.render("chatbot",{CurrentUser:req.user});
+})
+
+// forum api 
+  // add questions
+ 
+app.get("/addquestion",sq.addques);
+
+// get answers
+app.get("/postanswer",sq.addans);
+
+// get all data with id
+app.get("/getallforum",sq.getall);
+// get all 
+app.get("/getques",sq.getques);
+//get all ans
+app.get("/getans",sq.getans);
 
 
-
+app.post("/uploaddata",sq.insert);
 
 
 

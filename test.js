@@ -1,16 +1,29 @@
-const request = require('request'),
-      minify=require('harp-minify'),
-      cheerio =require('cheerio'),
-      find=require('cheerio-eq');
-      
-      
-      
-      var url="https://scholarships.gov.in/";
-      request(url,function(err,response,html){
-        if(!err)
-        {
-          var $ = cheerio.load(html);
-          var a =$(".marquee").eq(0).text().trim();
-          console.log(a);
-        }
-}); 
+var mysql      = require('mysql');
+var con = mysql.createConnection({
+  host     : process.env.IP,
+  user     : process.env.C9_USER,
+  password : '',
+  database : 'c9'
+});
+
+/*
+con.connect(function(err) {  
+if (err) throw err;  
+console.log("Connected!");  
+con.query(sql, function (err, result) {  
+if (err) throw err;  
+console.log("Table created");  
+});  
+
+});
+
+*/
+var sql = "CREATE TABLE answers (sid INT , qid INT,aid INT,  answer VARCHAR(255),PRIMARY KEY(sid,qid,aid))";  
+
+//     var sql = "SELECT id,sname,aname FROM schol WHERE id>23;";
+ con.query(sql, function (err, result) {
+   if (err) throw err;
+   console.log(result);
+ 
+ });
+
